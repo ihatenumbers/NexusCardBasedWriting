@@ -1,5 +1,5 @@
 import React, { useState, useRef, forwardRef } from 'react';
-import { MoreVertical, GripVertical, X, Copy } from 'lucide-react';
+import { MoreVertical, GripVertical, X, Copy, Lock, Unlock } from 'lucide-react';
 import { Card as ShadcnCard } from '@/components/ui/card';
 import { ContextMenu } from './ContextMenu';
 import { CardData, CardType } from '@/types';
@@ -40,6 +40,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(({
   };
 
   const contextMenuItems = [
+    {
+      label: data.isLocked ? 'Unlock Card' : 'Lock Card',
+      icon: data.isLocked ? <Unlock size={14} /> : <Lock size={14} />,
+      onClick: () => onUpdate(data.id, { isLocked: !data.isLocked }),
+    },
     {
       label: 'Duplicate Card',
       icon: <Copy size={14} />,
@@ -94,16 +99,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(({
       ref={ref}
       style={{ ...style, zIndex: data.zIndex }}
       className={cn(
-        "transition-shadow duration-200",
+        "transition-shadow duration-200 touch-none",
         isActive ? "shadow-2xl ring-1 ring-blue-500/50" : "shadow-lg",
         className
       )}
-      onMouseDown={(e) => {
-        onCardFocus(data.id);
-        onMouseDown?.(e);
-      }}
-      onMouseUp={onMouseUp}
-      onTouchEnd={onTouchEnd}
+      onPointerDown={() => onCardFocus(data.id)}
       {...props}
     >
       <ShadcnCard
@@ -115,36 +115,27 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(({
         {/* Header / Drag Handle */}
         <div
           className={cn(
-            "drag-handle h-8 flex items-center justify-between px-3 border-b cursor-grab active:cursor-grabbing shrink-0 transition-colors",
+            "drag-handle h-8 flex items-center justify-between px-3 border-b shrink-0 transition-colors touch-none",
+            data.isLocked ? "cursor-default" : "cursor-grab active:cursor-grabbing",
             getCardHeaderColor(data.type)
           )}
           onContextMenu={handleContextMenu}
         >
           <div className="flex items-center gap-2 flex-1 overflow-hidden">
             <div className={cn("w-2 h-2 rounded-full shrink-0", getCardDotColor(data.type))} />
+            {data.isLocked && <Lock size={10} className="text-gray-400 shrink-0" />}
             <DebouncedInput
               value={data.title}
               onDebouncedChange={(val) => onUpdate(data.id, { title: val })}
               placeholder={data.type.toUpperCase()}
               className="bg-transparent border-none text-[10px] font-bold text-gray-300 p-0 h-auto focus-visible:ring-0 uppercase tracking-widest w-full no-drag"
-              onMouseDown={(e) => e.stopPropagation()}
-              onTouchStart={(e) => e.stopPropagation()}
             />
           </div>
           <div className="flex items-center gap-1">
             <button
-              onMouseDown={(e) => {
-                e.stopPropagation();
-                onCardFocus(data.id);
-              }}
               onClick={(e) => {
                 e.stopPropagation();
                 handleContextMenu(e);
-              }}
-              onTouchStart={(e) => {
-                e.stopPropagation();
-                onCardFocus(data.id);
-                handleContextMenu(e as any);
               }}
               className="p-1 hover:bg-[#2a2b2f] rounded transition-colors text-gray-500 no-drag"
             >
@@ -154,11 +145,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(({
         </div>
 
         {/* Content Area */}
-        <div 
-          className="flex-1 overflow-y-auto p-2 custom-scrollbar no-drag"
-          onMouseDown={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
-        >
+        <div className="flex-1 overflow-y-auto p-2 custom-scrollbar no-drag touch-pan-y">
           {children}
         </div>
       </ShadcnCard>

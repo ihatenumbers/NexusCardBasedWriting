@@ -121,7 +121,6 @@ export const SnowflakeCard: React.FC<CardContentProps> = ({ onUpdate, isActive, 
           size="icon" 
           className="h-8 w-8 text-blue-400 hover:bg-blue-500/10"
           onClick={addTopLevelNode}
-          onTouchStart={(e) => { e.stopPropagation(); addTopLevelNode(); }}
           title="Add Top-Level Node"
         >
           <Plus size={16} />
@@ -178,7 +177,6 @@ const SnowflakeItem: React.FC<{
             {node.children && (
               <button 
                 onClick={() => setIsExpanded(!isExpanded)} 
-                onTouchStart={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
                 className="text-gray-500 hover:text-white"
               >
                 {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -195,7 +193,6 @@ const SnowflakeItem: React.FC<{
                 variant="ghost" 
                 className="h-6 w-6 text-blue-400" 
                 onClick={() => onExpand(node.id)}
-                onTouchStart={(e) => { e.stopPropagation(); onExpand(node.id); }}
               >
                 <Plus size={12} />
               </Button>
@@ -205,7 +202,6 @@ const SnowflakeItem: React.FC<{
               variant="ghost" 
               className="h-6 w-6 text-red-400" 
               onClick={() => onRemove(node.id)}
-              onTouchStart={(e) => { e.stopPropagation(); onRemove(node.id); }}
             >
               <Trash2 size={12} />
             </Button>

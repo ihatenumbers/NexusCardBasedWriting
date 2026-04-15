@@ -114,6 +114,7 @@ export const Canvas: React.FC = () => {
     y: card.y,
     w: card.w,
     h: card.h,
+    static: card.isLocked,
   })), [localCards, cols]);
 
   const saveHistory = useCallback(() => {
@@ -208,6 +209,7 @@ export const Canvas: React.FC = () => {
       w: DEFAULT_W,
       h: DEFAULT_H,
       zIndex: localCards.length + 1,
+      isLocked: false,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       settings: initialSettings || (
@@ -320,6 +322,7 @@ export const Canvas: React.FC = () => {
       x: card.x + 1, // Offset slightly
       y: card.y + 1,
       zIndex: localCards.length + 1,
+      isLocked: false,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       title: `${card.title} (Copy)`,

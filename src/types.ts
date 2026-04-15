@@ -53,6 +53,7 @@ export interface CardData {
   h: number; // Grid Height
   zIndex: number;
   settings?: CardSettings;
+  isLocked?: boolean;
   createdAt: number;
   updatedAt: number;
 }
