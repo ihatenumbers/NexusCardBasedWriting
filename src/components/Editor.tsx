@@ -185,6 +185,7 @@ export const Editor: React.FC<EditorProps> = ({
   return (
     <div
       onClick={() => setIsEditing(true)}
+      onPointerDown={(e) => e.stopPropagation()}
       className="min-h-full w-full cursor-text text-gray-300 leading-relaxed whitespace-pre-wrap break-words no-drag touch-auto"
     >
       {renderContent}
