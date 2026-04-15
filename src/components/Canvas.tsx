@@ -38,8 +38,9 @@ const ToolbarButton: React.FC<{ icon: React.ReactNode; label: string; onClick: (
   </Tooltip>
 );
 
+const GL = GridLayout as any;
+
 export const Canvas: React.FC = () => {
-  const GL = GridLayout as any;
   const dbCards = useLiveQuery(() => db.cards.toArray()) || [];
   const globalSettings = useLiveQuery(() => db.settings.get('main')) || {
     id: 'main',
@@ -68,7 +69,7 @@ export const Canvas: React.FC = () => {
   const [history, setHistory] = useState<CardData[][]>([]);
   const [future, setFuture] = useState<CardData[][]>([]);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
-  const [containerWidth, setContainerWidth] = useState(1200);
+  const [containerWidth, setContainerWidth] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const isInteracting = useRef(false);
 
@@ -81,14 +82,27 @@ export const Canvas: React.FC = () => {
 
   useEffect(() => {
     if (!containerRef.current) return;
+    const debouncedSetWidth = debounce((width: number) => {
+      setContainerWidth(width);
+    }, 100);
+
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        setContainerWidth(entry.contentRect.width);
+        debouncedSetWidth(entry.contentRect.width);
       }
     });
     observer.observe(containerRef.current);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      debouncedSetWidth.cancel();
+    };
   }, []);
+
+  const cols = useMemo(() => {
+    if (containerWidth < 480) return 4;
+    if (containerWidth < 768) return 8;
+    return globalSettings.gridCols;
+  }, [containerWidth, globalSettings.gridCols]);
 
   const layout = useMemo(() => localCards.map(card => ({
     i: card.id,
@@ -96,7 +110,7 @@ export const Canvas: React.FC = () => {
     y: card.y,
     w: card.w,
     h: card.h,
-  })), [localCards]);
+  })), [localCards, cols]);
 
   const saveHistory = useCallback(() => {
     setHistory(prev => [...prev, JSON.parse(JSON.stringify(localCards))].slice(-50));
@@ -236,18 +250,30 @@ export const Canvas: React.FC = () => {
     });
   }, []);
 
-  const onInteractionStart = () => {
+  const onInteractionStart = useCallback(() => {
     isInteracting.current = true;
     saveHistory();
-  };
+  }, [saveHistory]);
 
-  const onInteractionStop = useCallback(async () => {
-    // Persist all current positions to DB at once
-    await db.cards.bulkPut(localCards);
-    // Small delay before allowing DB sync to prevent race conditions with useLiveQuery
+  const onInteractionStop = useCallback(async (newLayout: any[]) => {
+    // 1. Update local state one last time with the final layout
+    const finalCards = localCards.map(card => {
+      const item = newLayout.find(l => l.i === card.id);
+      if (item) {
+        return { ...card, x: item.x, y: item.y, w: item.w, h: item.h, updatedAt: Date.now() };
+      }
+      return card;
+    });
+    
+    setLocalCards(finalCards);
+
+    // 2. Persist to DB
+    await db.cards.bulkPut(finalCards);
+    
+    // 3. Small delay before allowing DB sync to prevent race conditions with useLiveQuery
     setTimeout(() => {
       isInteracting.current = false;
-    }, 200);
+    }, 500);
   }, [localCards]);
 
   // Debounced DB sync
@@ -328,7 +354,7 @@ export const Canvas: React.FC = () => {
     return words;
   }, [localCards]);
 
-  const renderCardContent = (card: CardData) => {
+  const renderCardContent = useCallback((card: CardData) => {
     const props = {
       title: card.title,
       content: card.content,
@@ -349,12 +375,36 @@ export const Canvas: React.FC = () => {
       case 'settings': return <SettingsCard {...props} />;
       default: return null;
     }
-  };
+  }, [activeCardId, updateCard, triggerWords, focusCard]);
+
+  const handleDragStop = useCallback((layout: any[]) => {
+    onInteractionStop(layout);
+  }, [onInteractionStop]);
+
+  const handleResizeStop = useCallback((layout: any[]) => {
+    onInteractionStop(layout);
+  }, [onInteractionStop]);
+
+  const renderedCards = useMemo(() => localCards.map((card) => (
+    <div key={card.id} id={`card-${card.id}`}>
+      <Card
+        data={card}
+        onDelete={deleteCard}
+        onDuplicate={duplicateCard}
+        onUpdate={updateCard}
+        onCardFocus={focusCard}
+        isActive={activeCardId === card.id}
+        className="h-full"
+      >
+        {renderCardContent(card)}
+      </Card>
+    </div>
+  )), [localCards, activeCardId, deleteCard, duplicateCard, updateCard, focusCard, renderCardContent]);
 
   return (
     <TooltipProvider>
       <div 
-        className="relative w-full h-screen bg-[#0a0b0d] overflow-y-auto custom-scrollbar"
+        className="relative w-full h-screen bg-[#0a0b0d] overflow-y-auto overflow-x-hidden custom-scrollbar"
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleGlobalDrop}
       >
@@ -380,38 +430,31 @@ export const Canvas: React.FC = () => {
         </div>
 
         {/* Cards Canvas */}
-        <div ref={containerRef} className="p-10 pt-24 min-h-full">
-          {GL && (
+        <div ref={containerRef} className="px-4 md:px-10 pt-24 pb-20 min-h-full">
+          {GL && containerWidth > 0 && (
             <GL
               className="layout"
               layout={layout}
-              cols={globalSettings.gridCols}
+              cols={cols}
               rowHeight={globalSettings.rowHeight}
-              width={containerWidth - 80}
+              width={containerWidth}
               onLayoutChange={onLayoutChange}
               onDragStart={onInteractionStart}
-              onDragStop={onInteractionStop}
+              onDragStop={handleDragStop}
               onResizeStart={onInteractionStart}
-              onResizeStop={onInteractionStop}
+              onResizeStop={handleResizeStop}
               draggableHandle=".drag-handle"
               draggableCancel=".no-drag"
               margin={[20, 20]}
+              compactType="vertical"
+              isBounded={true}
+              useCSSTransforms={true}
+              measureBeforeMount={true}
+              isDraggable={true}
+              isResizable={true}
+              preventCollision={false}
             >
-              {localCards.map((card) => (
-                <div key={card.id} id={`card-${card.id}`}>
-                  <Card
-                    data={card}
-                    onDelete={deleteCard}
-                    onDuplicate={duplicateCard}
-                    onUpdate={updateCard}
-                    onCardFocus={focusCard}
-                    isActive={activeCardId === card.id}
-                    className="h-full"
-                  >
-                    {renderCardContent(card)}
-                  </Card>
-                </div>
-              ))}
+              {renderedCards}
             </GL>
           )}
         </div>
