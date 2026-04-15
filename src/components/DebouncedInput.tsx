@@ -33,6 +33,10 @@ export const DebouncedInput: React.FC<DebouncedInputProps> = ({
         e.stopPropagation();
         props.onMouseDown?.(e);
       }}
+      onTouchStart={(e) => {
+        e.stopPropagation();
+        props.onTouchStart?.(e);
+      }}
       className={cn("no-drag", props.className)}
     />
   );

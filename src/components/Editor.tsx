@@ -177,6 +177,7 @@ export const Editor: React.FC<EditorProps> = ({
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
         placeholder={placeholder}
         className="min-h-full w-full bg-transparent border-none outline-none focus:ring-0 p-0 resize-none text-gray-300 leading-relaxed no-drag overflow-hidden"
       />
@@ -187,6 +188,7 @@ export const Editor: React.FC<EditorProps> = ({
     <div
       onClick={() => setIsEditing(true)}
       onMouseDown={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
       className="min-h-full w-full cursor-text text-gray-300 leading-relaxed whitespace-pre-wrap break-words no-drag"
     >
       {renderContent}

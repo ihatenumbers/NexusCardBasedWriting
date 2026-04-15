@@ -128,6 +128,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(({
               placeholder={data.type.toUpperCase()}
               className="bg-transparent border-none text-[10px] font-bold text-gray-300 p-0 h-auto focus-visible:ring-0 uppercase tracking-widest w-full no-drag"
               onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
             />
           </div>
           <div className="flex items-center gap-1">
@@ -140,6 +141,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(({
                 e.stopPropagation();
                 handleContextMenu(e);
               }}
+              onTouchStart={(e) => {
+                e.stopPropagation();
+                onCardFocus(data.id);
+                handleContextMenu(e as any);
+              }}
               className="p-1 hover:bg-[#2a2b2f] rounded transition-colors text-gray-500 no-drag"
             >
               <MoreVertical size={14} />
@@ -148,7 +154,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(({
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-2 custom-scrollbar no-drag">
+        <div 
+          className="flex-1 overflow-y-auto p-2 custom-scrollbar no-drag"
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+        >
           {children}
         </div>
       </ShadcnCard>

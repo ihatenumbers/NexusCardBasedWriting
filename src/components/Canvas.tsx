@@ -29,6 +29,10 @@ const ToolbarButton: React.FC<{ icon: React.ReactNode; label: string; onClick: (
         "w-10 h-10 rounded-full hover:bg-[#2a2b2f] text-gray-400 hover:text-white transition-all"
       )}
       onClick={onClick}
+      onTouchStart={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
     >
       {icon}
     </TooltipTrigger>

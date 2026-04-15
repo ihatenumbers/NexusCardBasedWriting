@@ -77,6 +77,7 @@ export const OutlineCard: React.FC<CardContentProps> = ({ onUpdate, isActive, se
             size="icon" 
             className="h-8 w-8 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
             onClick={addItem}
+            onTouchStart={(e) => { e.stopPropagation(); addItem(); }}
           >
             <Plus size={16} />
           </Button>
@@ -104,6 +105,7 @@ export const OutlineCard: React.FC<CardContentProps> = ({ onUpdate, isActive, se
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => cycleStatus(item.id, item.status)}
+                onTouchStart={(e) => { e.stopPropagation(); cycleStatus(item.id, item.status); }}
                 className="shrink-0 hover:scale-110 transition-transform"
               >
                 {getStatusIcon(item.status)}
@@ -122,6 +124,7 @@ export const OutlineCard: React.FC<CardContentProps> = ({ onUpdate, isActive, se
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button 
                   onClick={() => updateItem(item.id, { isExpanded: !item.isExpanded })}
+                  onTouchStart={(e) => { e.stopPropagation(); updateItem(item.id, { isExpanded: !item.isExpanded }); }}
                   className={cn(
                     "p-1 rounded hover:bg-[#2a2b2f] transition-colors",
                     item.isExpanded ? "text-blue-400" : "text-gray-500"
@@ -134,6 +137,7 @@ export const OutlineCard: React.FC<CardContentProps> = ({ onUpdate, isActive, se
                   size="icon" 
                   className="h-6 w-6 text-red-400/50 hover:text-red-400 hover:bg-red-500/10"
                   onClick={() => deleteItem(item.id)}
+                  onTouchStart={(e) => { e.stopPropagation(); deleteItem(item.id); }}
                 >
                   <Trash2 size={12} />
                 </Button>
@@ -260,6 +264,7 @@ export const TimeLimitCard: React.FC<CardContentProps> = ({ content, onUpdate, i
                 value={Math.floor(timeLeft / 60)}
                 onChange={handleTimerChange}
                 onMouseDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
                 className="w-16 bg-transparent border-none text-3xl font-bold font-mono text-blue-400 focus:ring-0 p-0 text-center no-drag"
               />
               <span className="text-sm text-blue-500/50 font-mono font-bold">MIN</span>
@@ -271,6 +276,7 @@ export const TimeLimitCard: React.FC<CardContentProps> = ({ content, onUpdate, i
                 value={settings?.wordGoal || 500}
                 onChange={handleGoalChange}
                 onMouseDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
                 className="w-20 bg-transparent border-none text-3xl font-bold font-mono text-purple-400 focus:ring-0 p-0 text-center no-drag"
               />
               <span className="text-sm text-purple-500/50 font-mono font-bold">WORDS</span>
@@ -303,6 +309,7 @@ export const TimeLimitCard: React.FC<CardContentProps> = ({ content, onUpdate, i
         <div className="bg-[#1a1b1e] p-3 rounded-lg border border-[#2a2b2f] flex flex-col gap-2">
           <button 
             onClick={startTimer}
+            onTouchStart={(e) => { e.stopPropagation(); startTimer(); }}
             className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium transition-colors"
           >
             Start Writing Session
@@ -363,10 +370,18 @@ export const CodexCard: React.FC<CardContentProps> = ({ content, onUpdate, isAct
             onChange={(e) => setNewWord(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && addWord()}
             onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
             placeholder="Add trigger word..."
             className="h-6 text-[10px] bg-[#1a1b1e] border-[#2a2b2f] no-drag"
           />
-          <Button size="sm" className="h-6 px-2 text-[10px]" onClick={addWord}>Add</Button>
+          <Button 
+            size="sm" 
+            className="h-6 px-2 text-[10px]" 
+            onClick={addWord}
+            onTouchStart={(e) => { e.stopPropagation(); addWord(); }}
+          >
+            Add
+          </Button>
         </div>
       </div>
       <div className="flex-1">
@@ -462,6 +477,7 @@ export const ImageCard: React.FC<CardContentProps> = ({ onUpdate, settings }) =>
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={onDrop}
+      onTouchStart={(e) => e.stopPropagation()}
     >
       {settings?.imageUrl ? (
         <div 
@@ -484,7 +500,10 @@ export const ImageCard: React.FC<CardContentProps> = ({ onUpdate, settings }) =>
           />
         </div>
       ) : (
-        <label className="flex flex-col items-center gap-3 cursor-pointer group">
+        <label 
+          className="flex flex-col items-center gap-3 cursor-pointer group"
+          onTouchStart={(e) => e.stopPropagation()}
+        >
           <div className="p-4 rounded-full bg-[#2a2b2f] group-hover:bg-[#3a3b3f] transition-colors">
             <Upload className="text-gray-400 group-hover:text-white" size={24} />
           </div>

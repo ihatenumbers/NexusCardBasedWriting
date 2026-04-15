@@ -121,6 +121,7 @@ export const SnowflakeCard: React.FC<CardContentProps> = ({ onUpdate, isActive, 
           size="icon" 
           className="h-8 w-8 text-blue-400 hover:bg-blue-500/10"
           onClick={addTopLevelNode}
+          onTouchStart={(e) => { e.stopPropagation(); addTopLevelNode(); }}
           title="Add Top-Level Node"
         >
           <Plus size={16} />
@@ -175,7 +176,11 @@ const SnowflakeItem: React.FC<{
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1">
             {node.children && (
-              <button onClick={() => setIsExpanded(!isExpanded)} className="text-gray-500 hover:text-white">
+              <button 
+                onClick={() => setIsExpanded(!isExpanded)} 
+                onTouchStart={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
+                className="text-gray-500 hover:text-white"
+              >
                 {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               </button>
             )}
@@ -185,11 +190,23 @@ const SnowflakeItem: React.FC<{
           </div>
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             {!node.children && (
-              <Button size="icon" variant="ghost" className="h-6 w-6 text-blue-400" onClick={() => onExpand(node.id)}>
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="h-6 w-6 text-blue-400" 
+                onClick={() => onExpand(node.id)}
+                onTouchStart={(e) => { e.stopPropagation(); onExpand(node.id); }}
+              >
                 <Plus size={12} />
               </Button>
             )}
-            <Button size="icon" variant="ghost" className="h-6 w-6 text-red-400" onClick={() => onRemove(node.id)}>
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              className="h-6 w-6 text-red-400" 
+              onClick={() => onRemove(node.id)}
+              onTouchStart={(e) => { e.stopPropagation(); onRemove(node.id); }}
+            >
               <Trash2 size={12} />
             </Button>
           </div>
@@ -270,6 +287,7 @@ export const SettingsCard: React.FC<CardContentProps> = () => {
               value={localGridCols}
               onChange={(e) => setLocalGridCols(parseInt(e.target.value) || 12)}
               onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
               className="h-8 bg-[#1a1b1e] border-[#2a2b2f] text-xs no-drag"
             />
           </div>
@@ -281,6 +299,7 @@ export const SettingsCard: React.FC<CardContentProps> = () => {
               value={localRowHeight}
               onChange={(e) => setLocalRowHeight(parseInt(e.target.value) || 100)}
               onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
               className="h-8 bg-[#1a1b1e] border-[#2a2b2f] text-xs no-drag"
             />
           </div>
